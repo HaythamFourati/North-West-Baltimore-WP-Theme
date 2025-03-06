@@ -1,2 +1,109 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+
+/* Business Slider Styles */
+.business-slider {
+    position: relative;
+    background-color: #f3f4f6;
+    overflow: hidden;
+    border-radius: 0.5rem;
+}
+
+.slider-track {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+    will-change: transform;
+    height: 100%;
+}
+
+.business-slider .slide {
+    position: relative;
+    opacity: 0.3;
+    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+    transform: scale(0.9);
+    will-change: opacity, transform;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 0.5rem;
+}
+
+.business-slider .slide.active {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.business-slider .slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Slider Navigation */
+.slider-nav {
+    opacity: 1;
+    transition: all 0.3s ease-in-out;
+    z-index: 20;
+}
+
+.slider-nav:hover {
+    transform: scale(1.1);
+}
+
+.slider-nav.prev {
+    --translate-x: 0;
+}
+
+.slider-nav.next {
+    --translate-x: 0;
+}
+
+/* Make navigation buttons smaller on mobile */
+@media (max-width: 640px) {
+    .slider-nav {
+        width: 32px;
+        height: 32px;
+    }
+    .slider-nav svg {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+/* Slider Dots */
+.dots-container {
+    z-index: 20;
+}
+
+.dots-container button {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.5);
+    transition: all 0.3s ease-in-out;
+    padding: 0;
+    margin: 0 4px;
+}
+
+.dots-container button.active {
+    background-color: #fff;
+    transform: scale(1.2);
+}
+
+/* Slider Track Animation */
+@keyframes slideNext {
+    from { transform: translateX(0); }
+    to { transform: translateX(-100%); }
+}
+
+@keyframes slidePrev {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+}
+
+@media (hover: none) {
+    .slider-nav {
+        opacity: 1;
+        transform: translate(var(--translate-x, 0), -50%) scale(1);
+    }
+}

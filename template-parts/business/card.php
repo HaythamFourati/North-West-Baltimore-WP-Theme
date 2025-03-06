@@ -13,11 +13,29 @@
 
     <div class="p-6">
         <header class="mb-4">
-            <h3 class="text-xl font-semibold text-gray-900 hover:text-blue-600 transition-colors">
-                <a href="<?php the_permalink(); ?>">
-                    <?php the_title(); ?>
-                </a>
-            </h3>
+            <div class="flex items-start justify-between gap-4">
+                <h3 class="text-xl font-semibold text-gray-900 hover:text-blue-600 transition-colors">
+                    <a href="<?php the_permalink(); ?>">
+                        <?php the_title(); ?>
+                    </a>
+                </h3>
+                <?php 
+                $google_reviews = get_cached_google_reviews(get_the_ID());
+                if ($google_reviews && $google_reviews['rating'] > 0) : ?>
+                    <a href="https://search.google.com/local/reviews?placeid=<?php echo esc_attr($google_reviews['place_id']); ?>" 
+                       target="_blank" 
+                       rel="noopener noreferrer" 
+                       class="shrink-0 inline-flex items-center text-sm">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                            <svg class="w-3.5 h-3.5 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                            </svg>
+                            <?php echo number_format_i18n($google_reviews['rating'], 1); ?>
+                            <span class="ml-1 text-yellow-600">(<?php echo $google_reviews['total_reviews']; ?>)</span>
+                        </span>
+                    </a>
+                <?php endif; ?>
+            </div>
             <?php 
             $categories = get_the_terms(get_the_ID(), 'business_category');
             if ($categories && !is_wp_error($categories)) : ?>
@@ -62,7 +80,7 @@
             if ($website) : ?>
                 <div class="flex items-center">
                     <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     <a href="<?php echo esc_url($website); ?>" class="hover:text-blue-600 transition-colors" target="_blank" rel="noopener noreferrer">
                         Visit Website
