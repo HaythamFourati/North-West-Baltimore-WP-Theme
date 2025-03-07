@@ -8,23 +8,26 @@ get_header(); ?>
 <article <?php post_class('bg-white'); ?>>
     <?php 
     $gallery_images = get_post_meta(get_the_ID(), '_business_gallery', true);
+    $has_multiple_images = (!empty($gallery_images) && is_array($gallery_images)) || (has_post_thumbnail() && !empty($gallery_images) && is_array($gallery_images));
+    
     if (has_post_thumbnail() || (!empty($gallery_images) && is_array($gallery_images))) : 
-        // Prepare slides array
-        $slides = array();
-        if (has_post_thumbnail()) {
-            $slides[] = array(
-                'type' => 'thumbnail',
-                'id' => get_post_thumbnail_id()
-            );
-        }
-        if (!empty($gallery_images) && is_array($gallery_images)) {
-            foreach ($gallery_images as $image_id) {
+        if ($has_multiple_images) {
+            // Prepare slides array
+            $slides = array();
+            if (has_post_thumbnail()) {
                 $slides[] = array(
-                    'type' => 'gallery',
-                    'id' => $image_id
+                    'type' => 'thumbnail',
+                    'id' => get_post_thumbnail_id()
                 );
             }
-        }
+            if (!empty($gallery_images) && is_array($gallery_images)) {
+                foreach ($gallery_images as $image_id) {
+                    $slides[] = array(
+                        'type' => 'gallery',
+                        'id' => $image_id
+                    );
+                }
+            }
     ?>
         <div class="w-full bg-gray-100">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -103,9 +106,37 @@ get_header(); ?>
                 </div>
             </div>
         </div>
-    <?php endif; ?>
+    <?php 
+        } else { 
+            // Show single image
+    ?>
+        <div class="w-full bg-gray-100">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="relative h-[250px] sm:h-[350px] md:h-[400px] lg:h-[450px] xl:h-[500px]">
+                    <?php 
+                    if (has_post_thumbnail()) {
+                        echo get_the_post_thumbnail(null, 'large', ['class' => 'w-full h-full object-cover']);
+                    } else if (!empty($gallery_images) && is_array($gallery_images)) {
+                        $image_url = wp_get_attachment_image_url($gallery_images[0], 'large');
+                        $image_alt = get_post_meta($gallery_images[0], '_wp_attachment_image_alt', true);
+                        if ($image_url) {
+                            echo '<img src="' . esc_url($image_url) . '" alt="' . esc_attr($image_alt) . '" class="w-full h-full object-cover">';
+                        }
+                    }
+                    ?>
+                    <?php if (get_post_meta(get_the_ID(), 'featured', true) === 'yes') : ?>
+                        <span class="absolute top-4 right-4 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                            Featured Business
+                        </span>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    <?php 
+        }
+    endif; ?>
 
-    <div class="max-w-4xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
+    <div class="max-w-6xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
         <header class="mb-8">
             <div class="flex flex-wrap items-start justify-between gap-4">
                 <div>
@@ -236,9 +267,9 @@ get_header(); ?>
                         <a href="<?php echo esc_url($website); ?>" 
                            target="_blank" 
                            rel="noopener noreferrer" 
-                           class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                           class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                             </svg>
                             Visit Website
                         </a>
@@ -250,18 +281,83 @@ get_header(); ?>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div class="md:col-span-2">
                 <div class="prose max-w-none">
-                    <?php the_content(); ?>
+                    <?php 
+                    the_content();
+                    ?>
                 </div>
+
+                <?php
+                $place_id = get_post_meta(get_the_ID(), '_google_place_id', true);
+                $high_rated_reviews = get_google_place_detailed_reviews($place_id);
+                
+                if ($high_rated_reviews && !empty($high_rated_reviews)) : ?>
+                    <div class="mt-12">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-8 flex items-center">
+                            <svg class="w-6 h-6 text-yellow-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                            </svg>
+                            Top Reviews
+                        </h2>
+
+                        <div class="grid gap-6">
+                            <?php foreach ($high_rated_reviews as $review) : ?>
+                                <div class="bg-white rounded-lg shadow p-6">
+                                    <div class="flex items-start">
+                                        <?php if (isset($review['profile_photo_url'])) : ?>
+                                            <img src="<?php echo esc_url($review['profile_photo_url']); ?>" 
+                                                 alt="<?php echo esc_attr($review['author_name']); ?>" 
+                                                 class="w-10 h-10 rounded-full mr-4">
+                                        <?php else : ?>
+                                            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-4">
+                                                <span class="text-blue-600 font-medium text-lg">
+                                                    <?php echo esc_html(substr($review['author_name'], 0, 1)); ?>
+                                                </span>
+                                            </div>
+                                        <?php endif; ?>
+
+                                        <div class="flex-1">
+                                            <div class="flex items-center justify-between">
+                                                <h3 class="text-lg font-medium text-gray-900">
+                                                    <?php echo esc_html($review['author_name']); ?>
+                                                </h3>
+                                                <a href="<?php echo esc_url($review['author_url']); ?>" 
+                                                   target="_blank" 
+                                                   rel="noopener noreferrer" 
+                                                   class="text-sm text-blue-600 hover:text-blue-800">
+                                                    View Profile
+                                                </a>
+                                            </div>
+
+                                            <div class="flex items-center mt-1">
+                                                <?php for ($i = 0; $i < 5; $i++) : ?>
+                                                    <svg class="w-5 h-5 <?php echo $i < $review['rating'] ? 'text-yellow-400' : 'text-gray-300'; ?>" 
+                                                         fill="currentColor" 
+                                                         viewBox="0 0 20 20">
+                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                                    </svg>
+                                                <?php endfor; ?>
+                                                <span class="ml-2 text-sm text-gray-600">
+                                                    <?php echo human_time_diff(strtotime($review['time'])); ?> ago
+                                                </span>
+                                            </div>
+
+                                            <div class="mt-3 text-gray-700">
+                                                <?php echo esc_html($review['text']); ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
             </div>
 
             <div class="space-y-6">
-                <?php
-                $hours = get_post_meta(get_the_ID(), '_business_hours', true);
-                ?>
-
-                <?php if ($hours) : 
-                    $hours_array = explode("\n", $hours);
-                ?>
+                <?php 
+                $business_details = get_business_details(get_the_ID());
+                $hours = $business_details['hours'];
+                if ($hours) : ?>
                     <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
                         <div class="bg-gradient-to-br from-blue-50 to-blue-100 px-6 py-4 border-b border-gray-200">
                             <h2 class="text-lg font-semibold text-gray-900 flex items-center">
@@ -269,16 +365,19 @@ get_header(); ?>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
                                 Business Hours
+                                <?php if ($business_details['source'] === 'google') : ?>
+                                    <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                        <svg class="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M12 0C5.383 0 0 5.383 0 12s5.383 12 12 12 12-5.383 12-12S18.617 0 12 0z"/>
+                                            <path fill="#fff" d="M9.5 17l-5-5 1.41-1.41L9.5 14.17l8.09-8.09L19 7.5 9.5 17z"/>
+                                        </svg>
+                                        Google Verified
+                                    </span>
+                                <?php endif; ?>
                             </h2>
                         </div>
                         <div class="px-6 py-4">
-                            <div class="divide-y divide-gray-200">
-                                <?php foreach ($hours_array as $hour_line) : ?>
-                                    <div class="py-2 text-sm">
-                                        <?php echo esc_html(trim($hour_line)); ?>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
+                            <?php echo format_business_hours_display($hours); ?>
                         </div>
                     </div>
                 <?php endif; ?>

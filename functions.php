@@ -242,7 +242,7 @@ add_action('add_meta_boxes', 'add_business_meta_boxes');
 function render_business_details_meta_box($post) {
     // Add nonce for security
     wp_nonce_field('business_details_nonce', 'business_details_nonce');
-
+    
     // Get existing values
     $address = get_post_meta($post->ID, '_business_address', true);
     $phone = get_post_meta($post->ID, '_business_phone', true);
@@ -250,34 +250,43 @@ function render_business_details_meta_box($post) {
     $website = get_post_meta($post->ID, '_business_website', true);
     $hours = get_post_meta($post->ID, '_business_hours', true);
     $featured = get_post_meta($post->ID, 'featured', true);
-
-    // Output form fields
+    
+    // Default hours template if empty
+    if (empty($hours)) {
+        $hours = "Monday: 9:00 AM - 5:00 PM\nTuesday: 9:00 AM - 5:00 PM\nWednesday: 9:00 AM - 5:00 PM\nThursday: 9:00 AM - 5:00 PM\nFriday: 9:00 AM - 5:00 PM\nSaturday: Closed\nSunday: Closed";
+    }
     ?>
-    <div class="business-meta-fields">
+    <div class="business-details-form">
         <p>
             <label for="business_address">Address:</label><br>
-            <textarea id="business_address" name="business_address" rows="3" style="width: 100%;"><?php echo esc_textarea($address); ?></textarea>
+            <textarea id="business_address" name="business_address" class="widefat" rows="3"><?php echo esc_textarea($address); ?></textarea>
         </p>
+
         <p>
-            <label for="business_phone">Phone:</label><br>
-            <input type="tel" id="business_phone" name="business_phone" value="<?php echo esc_attr($phone); ?>" style="width: 100%;">
+            <label for="business_phone">Phone Number:</label><br>
+            <input type="tel" id="business_phone" name="business_phone" class="widefat" value="<?php echo esc_attr($phone); ?>">
         </p>
+
         <p>
-            <label for="business_email">Email:</label><br>
-            <input type="email" id="business_email" name="business_email" value="<?php echo esc_attr($email); ?>" style="width: 100%;">
+            <label for="business_email">Email Address:</label><br>
+            <input type="email" id="business_email" name="business_email" class="widefat" value="<?php echo esc_attr($email); ?>">
         </p>
+
         <p>
             <label for="business_website">Website:</label><br>
-            <input type="url" id="business_website" name="business_website" value="<?php echo esc_url($website); ?>" style="width: 100%;">
+            <input type="url" id="business_website" name="business_website" class="widefat" value="<?php echo esc_attr($website); ?>">
         </p>
+
         <p>
             <label for="business_hours">Business Hours:</label><br>
-            <textarea id="business_hours" name="business_hours" rows="3" style="width: 100%;"><?php echo esc_textarea($hours); ?></textarea>
+            <small class="description">Enter hours in format "Day: HH:MM AM - HH:MM PM" (one day per line)</small><br>
+            <textarea id="business_hours" name="business_hours" class="widefat code" rows="7" style="font-family: monospace;"><?php echo esc_textarea($hours); ?></textarea>
         </p>
+
         <p>
             <label>
                 <input type="checkbox" name="business_featured" value="yes" <?php checked($featured, 'yes'); ?>>
-                Featured Business
+                Feature this business
             </label>
         </p>
     </div>
@@ -747,7 +756,8 @@ function get_cached_google_reviews($post_id) {
         return false;
     }
 
-    $data = json_decode(wp_remote_retrieve_body($response), true);
+    $body = wp_remote_retrieve_body($response);
+    $data = json_decode($body, true);
     if (!isset($data['result'])) {
         return false;
     }
@@ -757,6 +767,216 @@ function get_cached_google_reviews($post_id) {
         'total_reviews' => $data['result']['user_ratings_total'] ?? 0,
         'place_id' => $place_id
     );
+
+    // Cache for 12 hours
+    set_transient($cache_key, $reviews, 12 * HOUR_IN_SECONDS);
+
+    return $reviews;
+}
+
+/**
+ * Format business hours into a structured array
+ */
+function parse_business_hours($hours_string) {
+    if (empty($hours_string)) {
+        return array();
+    }
+
+    $days = array(
+        'Monday', 'Tuesday', 'Wednesday', 'Thursday',
+        'Friday', 'Saturday', 'Sunday'
+    );
+    
+    $hours_array = array();
+    $lines = explode("\n", $hours_string);
+    
+    foreach ($lines as $line) {
+        $line = trim($line);
+        if (empty($line)) continue;
+        
+        // Try to match "Day: HH:MM AM - HH:MM PM" format
+        foreach ($days as $day) {
+            if (stripos($line, $day) === 0) {
+                $hours_array[$day] = trim(str_ireplace($day . ':', '', $line));
+                break;
+            }
+        }
+    }
+    
+    return $hours_array;
+}
+
+/**
+ * Format hours for display
+ */
+function format_business_hours_display($hours_string) {
+    $hours_array = parse_business_hours($hours_string);
+    $days = array(
+        'Monday', 'Tuesday', 'Wednesday', 'Thursday',
+        'Friday', 'Saturday', 'Sunday'
+    );
+    
+    $html = '<div class="business-hours grid grid-cols-1 gap-2">';
+    
+    foreach ($days as $day) {
+        $is_today = (strtolower($day) === strtolower(date('l')));
+        $hours = isset($hours_array[$day]) ? $hours_array[$day] : 'Closed';
+        
+        $html .= sprintf(
+            '<div class="flex items-center justify-between py-2 %s">
+                <span class="font-medium %s">%s</span>
+                <span class="text-gray-600">%s</span>
+            </div>',
+            $is_today ? 'bg-blue-50 px-3 rounded' : '',
+            $is_today ? 'text-blue-600' : 'text-gray-900',
+            esc_html($day),
+            esc_html($hours)
+        );
+    }
+    
+    $html .= '</div>';
+    return $html;
+}
+
+/**
+ * Get business details from Google Places API with fallback to local data
+ */
+function get_business_details($post_id) {
+    $place_id = get_post_meta($post_id, '_google_place_id', true);
+    $details = array(
+        'address' => get_post_meta($post_id, '_business_address', true),
+        'phone' => get_post_meta($post_id, '_business_phone', true),
+        'website' => get_post_meta($post_id, '_business_website', true),
+        'hours' => get_post_meta($post_id, '_business_hours', true),
+        'email' => get_post_meta($post_id, '_business_email', true),
+        'source' => 'local'
+    );
+
+    if (!empty($place_id)) {
+        $cache_key = 'google_place_details_' . $place_id;
+        $cached_details = get_transient($cache_key);
+
+        if ($cached_details !== false) {
+            return array_merge($details, $cached_details, array('source' => 'google'));
+        }
+
+        $api_key = get_option('google_places_api_key');
+        if (empty($api_key)) {
+            return $details;
+        }
+
+        $url = sprintf(
+            'https://maps.googleapis.com/maps/api/place/details/json?place_id=%s&fields=formatted_address,formatted_phone_number,website,opening_hours,url&key=%s',
+            urlencode($place_id),
+            $api_key
+        );
+
+        $response = wp_remote_get($url);
+        if (is_wp_error($response)) {
+            return $details;
+        }
+
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+
+        if ($data['status'] === 'OK' && !empty($data['result'])) {
+            $result = $data['result'];
+            $google_details = array();
+
+            // Format address
+            if (!empty($result['formatted_address'])) {
+                $google_details['address'] = $result['formatted_address'];
+            }
+
+            // Format phone
+            if (!empty($result['formatted_phone_number'])) {
+                $google_details['phone'] = $result['formatted_phone_number'];
+            }
+
+            // Format website
+            if (!empty($result['website'])) {
+                $google_details['website'] = $result['website'];
+            }
+
+            // Format hours
+            if (!empty($result['opening_hours']['periods'])) {
+                $days = array('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday');
+                $hours_text = '';
+                
+                foreach ($result['opening_hours']['periods'] as $period) {
+                    if (isset($period['open']) && isset($period['close'])) {
+                        $day = $days[$period['open']['day']];
+                        $open_time = date('g:i A', strtotime($period['open']['time']));
+                        $close_time = date('g:i A', strtotime($period['close']['time']));
+                        $hours_text .= "$day: $open_time - $close_time\n";
+                    }
+                }
+                
+                if (!empty($hours_text)) {
+                    $google_details['hours'] = trim($hours_text);
+                }
+            }
+
+            $google_details['source'] = 'google';
+            set_transient($cache_key, $google_details, 12 * HOUR_IN_SECONDS);
+            
+            return array_merge($details, $google_details);
+        }
+    }
+
+    return $details;
+}
+
+/**
+ * Get detailed Google reviews for a business
+ */
+function get_google_place_detailed_reviews($place_id) {
+    if (!$place_id) {
+        return false;
+    }
+
+    // Check for cached detailed reviews
+    $cache_key = 'google_detailed_reviews_' . $place_id;
+    $cached_reviews = get_transient($cache_key);
+    
+    if ($cached_reviews !== false) {
+        return $cached_reviews;
+    }
+
+    $api_key = get_option('google_places_api_key');
+    if (!$api_key) {
+        return false;
+    }
+
+    $place_url = "https://maps.googleapis.com/maps/api/place/details/json?place_id=" . urlencode($place_id) . 
+                 "&fields=reviews&key=" . $api_key;
+    
+    $response = wp_remote_get($place_url);
+    if (is_wp_error($response)) {
+        return false;
+    }
+
+    $body = wp_remote_retrieve_body($response);
+    $data = json_decode($body, true);
+    
+    if (!isset($data['result']['reviews'])) {
+        return false;
+    }
+
+    $reviews = array_filter($data['result']['reviews'], function($review) {
+        return $review['rating'] >= 4;
+    });
+
+    // Sort by rating (highest first) and then by time (newest first)
+    usort($reviews, function($a, $b) {
+        if ($a['rating'] === $b['rating']) {
+            return $b['time'] - $a['time'];
+        }
+        return $b['rating'] - $a['rating'];
+    });
+
+    // Take only the first 5 reviews
+    $reviews = array_slice($reviews, 0, 5);
 
     // Cache for 12 hours
     set_transient($cache_key, $reviews, 12 * HOUR_IN_SECONDS);
