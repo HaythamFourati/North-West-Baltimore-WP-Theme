@@ -337,7 +337,24 @@ get_header(); ?>
                                                     </svg>
                                                 <?php endfor; ?>
                                                 <span class="ml-2 text-sm text-gray-600">
-                                                    <?php echo human_time_diff(strtotime($review['time'])); ?> ago
+                                                    <?php 
+                                                    error_log('Review time format: ' . print_r($review['time'], true));
+                                                    $timestamp = strtotime($review['time']);
+                                                    error_log('Parsed timestamp: ' . print_r($timestamp, true));
+                                                    
+                                                    // Check if the timestamp is a Unix timestamp (integer)
+                                                    if (is_numeric($review['time'])) {
+                                                        $timestamp = intval($review['time']);
+                                                    } else {
+                                                        $timestamp = strtotime($review['time']);
+                                                    }
+                                                    
+                                                    if ($timestamp && $timestamp > 0) {
+                                                        echo human_time_diff($timestamp) . ' ago';
+                                                    } else {
+                                                        echo '(date unavailable)';
+                                                    }
+                                                    ?>
                                                 </span>
                                             </div>
 

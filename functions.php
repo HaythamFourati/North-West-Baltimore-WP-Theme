@@ -444,6 +444,44 @@ function search_google_places() {
 add_action('wp_ajax_search_google_places', 'search_google_places');
 
 /**
+ * Get place details from Google Places API
+ */
+function get_place_details() {
+    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'google_places_search')) {
+        wp_send_json_error('Invalid nonce');
+    }
+
+    if (!isset($_POST['place_id'])) {
+        wp_send_json_error('Place ID is required');
+    }
+
+    $api_key = get_option('google_places_api_key');
+    if (!$api_key) {
+        wp_send_json_error('Google Places API key is not configured');
+    }
+
+    $place_id = sanitize_text_field($_POST['place_id']);
+    $fields = 'formatted_phone_number,website,formatted_address,url';
+    $url = "https://maps.googleapis.com/maps/api/place/details/json?place_id={$place_id}&fields={$fields}&key={$api_key}";
+
+    $response = wp_remote_get($url);
+    if (is_wp_error($response)) {
+        wp_send_json_error('Failed to fetch place details');
+    }
+
+    $data = json_decode(wp_remote_retrieve_body($response), true);
+    if (!isset($data['result'])) {
+        wp_send_json_error('Invalid response from Google Places API');
+    }
+
+    // Add debug logging
+    error_log('Google Places API Response: ' . print_r($data['result'], true));
+
+    wp_send_json_success($data['result']);
+}
+add_action('wp_ajax_get_place_details', 'get_place_details');
+
+/**
  * Add Google Business Profile meta box
  */
 function add_google_business_meta_box() {
@@ -559,6 +597,9 @@ function render_google_business_meta_box($post) {
             var name = $this.data('name');
             var address = $this.data('address');
 
+            console.log('Place selected:', { placeId, name, address });
+
+            // Update Google Place fields
             $('#google_place_id').val(placeId);
             $('#google_place_name').val(name);
             $('#google_place_address').val(address);
@@ -567,9 +608,44 @@ function render_google_business_meta_box($post) {
             $('#saved-address').text(address);
             $('#saved-place-id').text(placeId);
 
+            // Auto-fill business details fields
+            console.log('Attempting to fill address field:', address);
+            $('#business_address').val(address);
+            $('#business_phone').val(''); // Will be filled by Places Details API
+            $('#business_website').val(''); // Will be filled by Places Details API
+
+            // Get additional details using Place Details API
+            console.log('Fetching additional details for place ID:', placeId);
+            $.post(ajaxurl, {
+                action: 'get_place_details',
+                place_id: placeId,
+                nonce: nonce
+            }, function(response) {
+                console.log('Place details response:', response);
+                if (response.success && response.data) {
+                    if (response.data.formatted_phone_number) {
+                        console.log('Setting phone number:', response.data.formatted_phone_number);
+                        $('#business_phone').val(response.data.formatted_phone_number);
+                    }
+                    if (response.data.website) {
+                        console.log('Setting website:', response.data.website);
+                        $('#business_website').val(response.data.website);
+                    }
+                }
+            });
+
             $('#selected-place').removeClass('hidden');
             $('#remove-place').show();
             $('#search-results').addClass('hidden');
+
+            // Debug: Check if fields were filled
+            setTimeout(function() {
+                console.log('Field values after update:', {
+                    address: $('#business_address').val(),
+                    phone: $('#business_phone').val(),
+                    website: $('#business_website').val()
+                });
+            }, 1000);
         });
 
         $('#remove-place').on('click', function() {
