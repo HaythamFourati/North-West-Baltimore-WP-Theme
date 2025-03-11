@@ -119,6 +119,8 @@ add_action('init', 'register_business_taxonomies');
 function add_business_query_vars($vars) {
     $vars[] = 'city';
     $vars[] = 'sort';
+    $vars[] = 'business_category';
+    $vars[] = 'business_city';
     return $vars;
 }
 add_filter('query_vars', 'add_business_query_vars');
@@ -165,6 +167,44 @@ function modify_business_category_query($query) {
     }
 }
 add_action('pre_get_posts', 'modify_business_category_query');
+
+// Modify business archive queries
+function modify_business_archive_query($query) {
+    if (!is_admin() && $query->is_main_query() && (is_post_type_archive('business') || is_tax('business_category'))) {
+        // Set posts per page
+        $query->set('posts_per_page', 12);
+
+        // Initialize tax query array
+        $tax_query = array();
+
+        // Handle category filter
+        $category = get_query_var('business_category');
+        if (!empty($category)) {
+            $tax_query[] = array(
+                'taxonomy' => 'business_category',
+                'field' => 'slug',
+                'terms' => $category
+            );
+        }
+
+        // Handle city filter
+        $city = get_query_var('business_city');
+        if (!empty($city)) {
+            $tax_query[] = array(
+                'taxonomy' => 'business_city',
+                'field' => 'slug',
+                'terms' => $city
+            );
+        }
+
+        // If we have tax queries, add the relation
+        if (!empty($tax_query)) {
+            $tax_query['relation'] = 'AND';
+            $query->set('tax_query', $tax_query);
+        }
+    }
+}
+add_action('pre_get_posts', 'modify_business_archive_query');
 
 // Custom Nav Walker for Desktop Menu
 class Custom_Nav_Walker extends Walker_Nav_Menu {
