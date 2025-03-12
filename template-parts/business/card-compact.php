@@ -29,8 +29,11 @@ $is_featured = get_post_meta(get_the_ID(), 'featured', true) === 'yes';
     <div class="flex items-start p-4">
         <?php if (has_post_thumbnail()) : ?>
             <div class="flex-shrink-0 relative">
-                <div class="w-20 h-20 rounded-lg overflow-hidden transform group-hover:scale-105 transition-transform duration-300">
-                    <?php echo get_the_post_thumbnail(null, 'thumbnail', ['class' => 'w-full h-full object-cover']); ?>
+                <div class="w-24 h-24 md:w-28 md:h-28 rounded-lg overflow-hidden transform group-hover:scale-105 transition-transform duration-300">
+                    <?php echo get_the_post_thumbnail(null, 'medium', [
+                        'class' => 'w-full h-full object-cover',
+                        'style' => 'aspect-ratio: 1/1;'
+                    ]); ?>
                 </div>
                 <?php if (!empty($business_details['rating'])) : ?>
                     <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-white rounded-full px-2 py-1 shadow-md">

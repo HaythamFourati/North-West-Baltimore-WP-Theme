@@ -79,33 +79,6 @@ get_header(); ?>
     </div>
 </div>
 
-<!-- Quick Stats -->
-<div class="bg-white">
-    <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-2 gap-8 md:grid-cols-4">
-            <?php
-            $total_businesses = wp_count_posts('business')->publish;
-            $total_categories = count(get_terms('business_category', array('hide_empty' => false)));
-            ?>
-            <div class="text-center">
-                <span class="block text-4xl font-bold text-blue-600"><?php echo number_format($total_businesses); ?></span>
-                <span class="block mt-1 text-gray-500">Local Businesses</span>
-            </div>
-            <div class="text-center">
-                <span class="block text-4xl font-bold text-blue-600"><?php echo number_format($total_categories); ?></span>
-                <span class="block mt-1 text-gray-500">Categories</span>
-            </div>
-            <div class="text-center">
-                <span class="block text-4xl font-bold text-blue-600">24/7</span>
-                <span class="block mt-1 text-gray-500">Support</span>
-            </div>
-            <div class="text-center">
-                <span class="block text-4xl font-bold text-blue-600">100%</span>
-                <span class="block mt-1 text-gray-500">Local</span>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- Business Categories Section -->
 <div class="bg-gray-50">
@@ -221,11 +194,11 @@ get_header(); ?>
 </div>
 
 <!-- Call to Action -->
-<div class="bg-blue-700">
+<div class="bg-blue-100">
     <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8 lg:flex lg:items-center lg:justify-between">
-        <h2 class="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-            <span class="block">Own a Business?</span>
-            <span class="block text-yellow-400">Join our growing community today.</span>
+        <h2 class="text-3xl font-bold text-blue-800 sm:text-4xl">
+            <span class="block text-5xl">Own a Business?</span>
+            <span class="block text-gray-800">Join our growing community today.</span>
         </h2>
         <div class="mt-8 flex lg:mt-0 lg:flex-shrink-0">
             <div class="inline-flex rounded-md shadow">
@@ -312,13 +285,29 @@ function initMap() {
 
                 // Create info window content
                 const content = `
-                    <div class="p-4 max-w-sm">
-                        <div class="flex items-center space-x-4">
-                            ${business.thumbnail ? `<img src="${business.thumbnail}" alt="${business.title}" class="w-16 h-16 object-cover rounded">` : ''}
-                            <div>
-                                <h3 class="font-semibold text-lg">${business.title}</h3>
-                                <p class="text-sm text-gray-600">${place.formatted_address}</p>
-                                <a href="${business.url}" class="text-blue-600 hover:text-blue-800 text-sm">View Details →</a>
+                    <div class="p-4 max-w-sm bg-white rounded-lg shadow-sm">
+                        ${business.thumbnail ? `
+                            <div class="w-full h-32 mb-4 overflow-hidden rounded-lg">
+                                <img src="${business.thumbnail}" alt="${business.title}" class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-300">
+                            </div>
+                        ` : ''}
+                        <div class="space-y-2">
+                            <h3 class="font-bold text-lg text-gray-900 leading-tight">${business.title}</h3>
+                            <p class="text-sm text-gray-600 flex items-start">
+                                <svg class="w-4 h-4 mr-1 mt-0.5 flex-shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                                <span class="flex-1">${place.formatted_address}</span>
+                            </p>
+                            <div class="pt-2">
+                                <a href="${business.url}" 
+                                   class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200">
+                                    View Details
+                                    <svg class="ml-2 -mr-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </a>
                             </div>
                         </div>
                     </div>
