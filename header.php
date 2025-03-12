@@ -20,7 +20,7 @@
             <!-- Logo -->
             <div class="flex-shrink-0 flex items-center">
                 <a href="<?php echo esc_url(home_url('/')); ?>" class="inline-block">
-                    <img class="h-12 w-auto" src="<?php echo esc_url(get_template_directory_uri() . './src/assets/logo-nwb.png'); ?>" alt="<?php echo esc_attr(get_bloginfo('name')); ?>">
+                    <img class="h-12 w-auto" src="/wp-content/uploads/2025/03/logo-nwb.png" alt="<?php echo esc_attr(get_bloginfo('name')); ?>">
                 </a>
             </div>
 
