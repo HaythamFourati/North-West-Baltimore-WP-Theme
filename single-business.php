@@ -30,7 +30,7 @@ get_header(); ?>
             }
     ?>
         <div class="w-full bg-gray-100">
-            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="relative overflow-hidden">
                     <div class="business-slider h-[250px] sm:h-[350px] md:h-[400px] lg:h-[450px] xl:h-[500px] relative">
                         <div class="slider-track absolute top-0 left-0 w-full h-full flex">
@@ -38,47 +38,97 @@ get_header(); ?>
                             // Add last slide clone at the beginning
                             $last_slide = end($slides);
                             if ($last_slide['type'] === 'thumbnail') {
-                                echo '<div class="slide min-w-full h-full flex items-center justify-center">';
-                                echo get_the_post_thumbnail(null, 'large', ['class' => 'w-full h-full object-cover']);
-                                echo '</div>';
+                                $featured_image = wp_get_attachment_image_src(get_post_thumbnail_id(), 'business-featured');
+                                if ($featured_image) {
+                                ?>
+                                <div class="slide min-w-full h-full flex-shrink-0">
+                                    <div class="business-featured-image w-full h-full">
+                                        <img src="<?php echo esc_url($featured_image[0]); ?>" 
+                                             alt="<?php echo esc_attr(get_the_title()); ?>" 
+                                             class="w-full h-full object-cover" 
+                                             loading="lazy">
+                                    </div>
+                                </div>
+                                <?php 
+                                }
                             } else {
-                                $image_url = wp_get_attachment_image_url($last_slide['id'], 'large');
-                                $image_alt = get_post_meta($last_slide['id'], '_wp_attachment_image_alt', true);
-                                if ($image_url) {
-                                    echo '<div class="slide min-w-full h-full flex items-center justify-center">';
-                                    echo '<img src="' . esc_url($image_url) . '" alt="' . esc_attr($image_alt) . '" class="w-full h-full object-cover">';
-                                    echo '</div>';
+                                $image = wp_get_attachment_image_src($last_slide['id'], 'business-gallery');
+                                if ($image) {
+                                ?>
+                                <div class="slide min-w-full h-full flex-shrink-0">
+                                    <div class="business-gallery-image-<?php echo esc_attr($last_slide['id']); ?> w-full h-full">
+                                        <img src="<?php echo esc_url($image[0]); ?>" 
+                                             alt="<?php echo esc_attr(get_the_title()); ?>" 
+                                             class="w-full h-full object-cover" 
+                                             loading="lazy">
+                                    </div>
+                                </div>
+                                <?php 
                                 }
                             }
 
-                            // Original slides
+                            // Main slides
                             foreach ($slides as $slide) {
-                                echo '<div class="slide min-w-full h-full flex items-center justify-center">';
                                 if ($slide['type'] === 'thumbnail') {
-                                    echo get_the_post_thumbnail(null, 'large', ['class' => 'w-full h-full object-cover']);
+                                    $featured_image = wp_get_attachment_image_src(get_post_thumbnail_id(), 'business-featured');
+                                    if ($featured_image) {
+                                    ?>
+                                    <div class="slide min-w-full h-full flex-shrink-0">
+                                        <div class="business-featured-image w-full h-full">
+                                            <img src="<?php echo esc_url($featured_image[0]); ?>" 
+                                                 alt="<?php echo esc_attr(get_the_title()); ?>" 
+                                                 class="w-full h-full object-cover" 
+                                                 loading="lazy">
+                                        </div>
+                                    </div>
+                                    <?php 
+                                    }
                                 } else {
-                                    $image_url = wp_get_attachment_image_url($slide['id'], 'large');
-                                    $image_alt = get_post_meta($slide['id'], '_wp_attachment_image_alt', true);
-                                    if ($image_url) {
-                                        echo '<img src="' . esc_url($image_url) . '" alt="' . esc_attr($image_alt) . '" class="w-full h-full object-cover">';
+                                    $image = wp_get_attachment_image_src($slide['id'], 'business-gallery');
+                                    if ($image) {
+                                    ?>
+                                    <div class="slide min-w-full h-full flex-shrink-0">
+                                        <div class="business-gallery-image-<?php echo esc_attr($slide['id']); ?> w-full h-full">
+                                            <img src="<?php echo esc_url($image[0]); ?>" 
+                                                 alt="<?php echo esc_attr(get_the_title()); ?>" 
+                                                 class="w-full h-full object-cover" 
+                                                 loading="lazy">
+                                        </div>
+                                    </div>
+                                    <?php 
                                     }
                                 }
-                                echo '</div>';
                             }
 
                             // Add first slide clone at the end
                             $first_slide = reset($slides);
                             if ($first_slide['type'] === 'thumbnail') {
-                                echo '<div class="slide min-w-full h-full flex items-center justify-center">';
-                                echo get_the_post_thumbnail(null, 'large', ['class' => 'w-full h-full object-cover']);
-                                echo '</div>';
+                                $featured_image = wp_get_attachment_image_src(get_post_thumbnail_id(), 'business-featured');
+                                if ($featured_image) {
+                                ?>
+                                <div class="slide min-w-full h-full flex-shrink-0">
+                                    <div class="business-featured-image w-full h-full">
+                                        <img src="<?php echo esc_url($featured_image[0]); ?>" 
+                                             alt="<?php echo esc_attr(get_the_title()); ?>" 
+                                             class="w-full h-full object-cover" 
+                                             loading="lazy">
+                                    </div>
+                                </div>
+                                <?php 
+                                }
                             } else {
-                                $image_url = wp_get_attachment_image_url($first_slide['id'], 'large');
-                                $image_alt = get_post_meta($first_slide['id'], '_wp_attachment_image_alt', true);
-                                if ($image_url) {
-                                    echo '<div class="slide min-w-full h-full flex items-center justify-center">';
-                                    echo '<img src="' . esc_url($image_url) . '" alt="' . esc_attr($image_alt) . '" class="w-full h-full object-cover">';
-                                    echo '</div>';
+                                $image = wp_get_attachment_image_src($first_slide['id'], 'business-gallery');
+                                if ($image) {
+                                ?>
+                                <div class="slide min-w-full h-full flex-shrink-0">
+                                    <div class="business-gallery-image-<?php echo esc_attr($first_slide['id']); ?> w-full h-full">
+                                        <img src="<?php echo esc_url($image[0]); ?>" 
+                                             alt="<?php echo esc_attr(get_the_title()); ?>" 
+                                             class="w-full h-full object-cover" 
+                                             loading="lazy">
+                                    </div>
+                                </div>
+                                <?php 
                                 }
                             }
                             ?>
@@ -111,16 +161,33 @@ get_header(); ?>
             // Show single image
     ?>
         <div class="w-full bg-gray-100">
-            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="relative h-[250px] sm:h-[350px] md:h-[400px] lg:h-[450px] xl:h-[500px]">
                     <?php 
                     if (has_post_thumbnail()) {
-                        echo get_the_post_thumbnail(null, 'large', ['class' => 'w-full h-full object-cover']);
+                        $featured_image = wp_get_attachment_image_src(get_post_thumbnail_id(), 'business-featured');
+                        if ($featured_image) {
+                            $featured_class = 'business-featured-image';
+                        ?>
+                        <div class="<?php echo esc_attr($featured_class); ?> w-full h-full">
+                            <img src="<?php echo esc_url($featured_image[0]); ?>" 
+                                 alt="<?php echo esc_attr(get_the_title()); ?>" 
+                                 class="w-full h-full object-cover" 
+                                 loading="lazy">
+                        </div>
+                        <?php 
+                        }
                     } else if (!empty($gallery_images) && is_array($gallery_images)) {
-                        $image_url = wp_get_attachment_image_url($gallery_images[0], 'large');
-                        $image_alt = get_post_meta($gallery_images[0], '_wp_attachment_image_alt', true);
-                        if ($image_url) {
-                            echo '<img src="' . esc_url($image_url) . '" alt="' . esc_attr($image_alt) . '" class="w-full h-full object-cover">';
+                        $image = wp_get_attachment_image_src($gallery_images[0], 'business-gallery');
+                        if ($image) {
+                        ?>
+                        <div class="slider-slide business-gallery-image-<?php echo esc_attr($gallery_images[0]); ?> w-full h-full flex-shrink-0">
+                            <img src="<?php echo esc_url($image[0]); ?>" 
+                                 alt="<?php echo esc_attr(get_the_title()); ?>" 
+                                 class="w-full h-full object-cover" 
+                                 loading="lazy">
+                        </div>
+                        <?php 
                         }
                     }
                     ?>
@@ -135,8 +202,9 @@ get_header(); ?>
     <?php 
         }
     endif; ?>
-
-    <div class="max-w-6xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
+    
+    <!-- Business Details -->
+    <div class="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
         <header class="mb-8">
             <div class="flex flex-wrap items-start justify-between gap-4">
                 <div>
@@ -219,7 +287,7 @@ get_header(); ?>
                     <div class="space-y-2">
                         <?php if ($address) : ?>
                         <div class="flex items-center text-sm text-gray-600">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                             </svg>
@@ -228,7 +296,7 @@ get_header(); ?>
                         <?php endif; ?>
                         <?php if ($phone) : ?>
                         <div class="flex items-center text-sm">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                             </svg>
                             <a href="tel:<?php echo esc_attr($phone); ?>" class="text-blue-600 hover:text-blue-700">
@@ -238,7 +306,7 @@ get_header(); ?>
                         <?php endif; ?>
                         <?php if ($email) : ?>
                         <div class="flex items-center text-sm">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                             </svg>
                             <a href="mailto:<?php echo esc_attr($email); ?>" class="text-blue-600 hover:text-blue-700">
@@ -246,33 +314,112 @@ get_header(); ?>
                             </a>
                         </div>
                         <?php endif; ?>
+                        <?php if ($address) : ?>
+                        <div id="business-map" class="w-full h-64 rounded-lg mt-4 shadow-sm"></div>
+                        <?php 
+                            $maps_api_key = get_option('google_places_api_key');
+                            if ($maps_api_key) : 
+                        ?>
+                            <script>
+                                function initMap() {
+                                    const geocoder = new google.maps.Geocoder();
+                                    const mapOptions = {
+                                        zoom: 15,
+                                        mapTypeControl: false,
+                                        streetViewControl: false,
+                                        styles: [
+                                            {
+                                                featureType: "poi",
+                                                elementType: "labels",
+                                                stylers: [{ visibility: "off" }]
+                                            }
+                                        ]
+                                    };
+                                    
+                                    const map = new google.maps.Map(document.getElementById("business-map"), mapOptions);
+                                    
+                                    geocoder.geocode({ address: <?php echo json_encode($address); ?> }, (results, status) => {
+                                        if (status === "OK") {
+                                            const location = results[0].geometry.location;
+                                            map.setCenter(location);
+                                            
+                                            new google.maps.Marker({
+                                                map: map,
+                                                position: location,
+                                                animation: google.maps.Animation.DROP
+                                            });
+                                        }
+                                    });
+                                }
+                            </script>
+                            <script src="https://maps.googleapis.com/maps/api/js?key=<?php echo esc_attr($maps_api_key); ?>&callback=initMap" async defer></script>
+                        <?php endif; ?>
+                        <?php endif; ?>
                     </div>
                     <?php endif; ?>
                 </div>
-                <div class="flex gap-3">
-                    <?php
-                    $website = get_post_meta(get_the_ID(), '_business_website', true);
-                    
-                    if ($phone) : ?>
-                        <a href="tel:<?php echo esc_attr($phone); ?>" 
-                           class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="flex flex-col gap-4">
+                    <div class="flex gap-3">
+                        <?php
+                        $website = get_post_meta(get_the_ID(), '_business_website', true);
+                        $phone = get_post_meta(get_the_ID(), '_business_phone', true);
+                        
+                        if ($phone) : ?>
+                        <a href="tel:<?php echo esc_attr($phone); ?>" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                             </svg>
                             Call Now
                         </a>
-                    <?php endif;
-                    
-                    if ($website) : ?>
-                        <a href="<?php echo esc_url($website); ?>" 
-                           target="_blank" 
-                           rel="noopener noreferrer" 
-                           class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                        <?php endif;
+                        if ($website) : ?>
+                        <a href="<?php echo esc_url($website); ?>" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
                             </svg>
                             Visit Website
                         </a>
+                        <?php endif; ?>
+                    </div>
+                    <?php
+                    // Get social media links
+                    $facebook = get_post_meta(get_the_ID(), '_business_facebook', true);
+                    $linkedin = get_post_meta(get_the_ID(), '_business_linkedin', true);
+                    $youtube = get_post_meta(get_the_ID(), '_business_youtube', true);
+                    $twitter = get_post_meta(get_the_ID(), '_business_twitter', true);
+
+                    if ($facebook || $linkedin || $youtube || $twitter) :
+                    ?>
+                    <div class="flex gap-4 justify-center items-center mt-4">
+                        <?php if ($facebook) : ?>
+                        <a href="<?php echo esc_url($facebook); ?>" target="_blank" rel="noopener noreferrer" class="p-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-blue-600 hover:text-white transition-all" title="Facebook">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18.77,7.46H14.5v-1.9c0-.9.6-1.1,1-1.1h3V.5h-4.33C10.24.5,9.5,3.44,9.5,5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4Z"/>
+                            </svg>
+                        </a>
+                        <?php endif; ?>
+                        <?php if ($linkedin) : ?>
+                        <a href="<?php echo esc_url($linkedin); ?>" target="_blank" rel="noopener noreferrer" class="p-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-blue-700 hover:text-white transition-all" title="LinkedIn">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M20.447,20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853,0-2.136,1.445-2.136,2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9,1.637-1.85,3.37-1.85c3.601,0,4.267,2.37,4.267,5.455v6.286ZM5.337,7.433c-1.144,0-2.063-.926-2.063-2.065a2.064,2.064,0,1,1,4.126,0c0,1.139-.92,2.065-2.063,2.065Zm1.782,13.019H3.555V9h3.564Z"/>
+                            </svg>
+                        </a>
+                        <?php endif; ?>
+                        <?php if ($youtube) : ?>
+                        <a href="<?php echo esc_url($youtube); ?>" target="_blank" rel="noopener noreferrer" class="p-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-red-600 hover:text-white transition-all" title="YouTube">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M23.498,6.186a3.016,3.016,0,0,0-2.122-2.136C19.505,3.545,12,3.545,12,3.545s-7.505,0-9.377.505A3.017,3.017,0,0,0,.5,6.186C0,8.07,0,12,0,12s0,3.93.5,5.814a3.016,3.016,0,0,0,2.122,2.136c1.871.505,9.376.505,9.376.505s7.505,0,9.377-.505a3.015,3.015,0,0,0,2.122-2.136C24,15.93,24,12,24,12s0-3.93-.5-5.814ZM9.545,15.568V8.432L15.818,12Z"/>
+                            </svg>
+                        </a>
+                        <?php endif; ?>
+                        <?php if ($twitter) : ?>
+                        <a href="<?php echo esc_url($twitter); ?>" target="_blank" rel="noopener noreferrer" class="p-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-black hover:text-white transition-all" title="X (Twitter)">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                            </svg>
+                        </a>
+                        <?php endif; ?>
+                    </div>
                     <?php endif; ?>
                 </div>
             </div>
@@ -294,7 +441,7 @@ get_header(); ?>
                     <div class="mt-12">
                         <h2 class="text-2xl font-bold text-gray-900 mb-8 flex items-center">
                             <svg class="w-6 h-6 text-yellow-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
                             </svg>
                             Top Reviews
                         </h2>

@@ -280,54 +280,52 @@ add_action('add_meta_boxes', 'add_business_meta_boxes');
 
 // Render Business Details Meta Box
 function render_business_details_meta_box($post) {
-    // Add nonce for security
-    wp_nonce_field('business_details_nonce', 'business_details_nonce');
-    
     // Get existing values
     $address = get_post_meta($post->ID, '_business_address', true);
     $phone = get_post_meta($post->ID, '_business_phone', true);
     $email = get_post_meta($post->ID, '_business_email', true);
     $website = get_post_meta($post->ID, '_business_website', true);
-    $hours = get_post_meta($post->ID, '_business_hours', true);
-    $featured = get_post_meta($post->ID, 'featured', true);
+    $facebook = get_post_meta($post->ID, '_business_facebook', true);
+    $linkedin = get_post_meta($post->ID, '_business_linkedin', true);
+    $youtube = get_post_meta($post->ID, '_business_youtube', true);
+    $twitter = get_post_meta($post->ID, '_business_twitter', true);
     
-    // Default hours template if empty
-    if (empty($hours)) {
-        $hours = "Monday: 9:00 AM - 5:00 PM\nTuesday: 9:00 AM - 5:00 PM\nWednesday: 9:00 AM - 5:00 PM\nThursday: 9:00 AM - 5:00 PM\nFriday: 9:00 AM - 5:00 PM\nSaturday: Closed\nSunday: Closed";
-    }
+    // Add nonce for security
+    wp_nonce_field('business_details_meta_box', 'business_details_meta_box_nonce');
     ?>
-    <div class="business-details-form">
+    <div class="business-meta-box">
         <p>
             <label for="business_address">Address:</label><br>
-            <textarea id="business_address" name="business_address" class="widefat" rows="3"><?php echo esc_textarea($address); ?></textarea>
+            <textarea id="business_address" name="business_address" rows="3" class="widefat"><?php echo esc_textarea($address); ?></textarea>
         </p>
-
         <p>
-            <label for="business_phone">Phone Number:</label><br>
-            <input type="tel" id="business_phone" name="business_phone" class="widefat" value="<?php echo esc_attr($phone); ?>">
+            <label for="business_phone">Phone:</label><br>
+            <input type="tel" id="business_phone" name="business_phone" value="<?php echo esc_attr($phone); ?>" class="widefat">
         </p>
-
         <p>
-            <label for="business_email">Email Address:</label><br>
-            <input type="email" id="business_email" name="business_email" class="widefat" value="<?php echo esc_attr($email); ?>">
+            <label for="business_email">Email:</label><br>
+            <input type="email" id="business_email" name="business_email" value="<?php echo esc_attr($email); ?>" class="widefat">
         </p>
-
         <p>
             <label for="business_website">Website:</label><br>
-            <input type="url" id="business_website" name="business_website" class="widefat" value="<?php echo esc_attr($website); ?>">
+            <input type="url" id="business_website" name="business_website" value="<?php echo esc_attr($website); ?>" class="widefat">
         </p>
-
+        <h4 style="margin-top: 20px; padding-bottom: 5px; border-bottom: 1px solid #eee;">Social Media Links</h4>
         <p>
-            <label for="business_hours">Business Hours:</label><br>
-            <small class="description">Enter hours in format "Day: HH:MM AM - HH:MM PM" (one day per line)</small><br>
-            <textarea id="business_hours" name="business_hours" class="widefat code" rows="7" style="font-family: monospace;"><?php echo esc_textarea($hours); ?></textarea>
+            <label for="business_facebook">Facebook URL:</label><br>
+            <input type="url" id="business_facebook" name="business_facebook" value="<?php echo esc_attr($facebook); ?>" class="widefat" placeholder="https://facebook.com/your-page">
         </p>
-
         <p>
-            <label>
-                <input type="checkbox" name="business_featured" value="yes" <?php checked($featured, 'yes'); ?>>
-                Feature this business
-            </label>
+            <label for="business_linkedin">LinkedIn URL:</label><br>
+            <input type="url" id="business_linkedin" name="business_linkedin" value="<?php echo esc_attr($linkedin); ?>" class="widefat" placeholder="https://linkedin.com/company/your-company">
+        </p>
+        <p>
+            <label for="business_youtube">YouTube URL:</label><br>
+            <input type="url" id="business_youtube" name="business_youtube" value="<?php echo esc_attr($youtube); ?>" class="widefat" placeholder="https://youtube.com/@your-channel">
+        </p>
+        <p>
+            <label for="business_twitter">X (Twitter) URL:</label><br>
+            <input type="url" id="business_twitter" name="business_twitter" value="<?php echo esc_attr($twitter); ?>" class="widefat" placeholder="https://x.com/your-handle">
         </p>
     </div>
     <?php
@@ -793,16 +791,13 @@ add_action('admin_init', 'add_google_places_api_settings');
 
 // Save Business Meta Box Data
 function save_business_meta_box_data($post_id) {
-    // Check if nonce is set and valid
-    if (!isset($_POST['business_details_nonce']) || !wp_verify_nonce($_POST['business_details_nonce'], 'business_details_nonce')) {
+    // Check if our nonce is set and verify it
+    if (!isset($_POST['business_details_meta_box_nonce']) || 
+        !wp_verify_nonce($_POST['business_details_meta_box_nonce'], 'business_details_meta_box')) {
         return;
     }
 
-    if (!isset($_POST['business_gallery_nonce']) || !wp_verify_nonce($_POST['business_gallery_nonce'], 'business_gallery_nonce')) {
-        return;
-    }
-
-    // Check if this is an autosave
+    // If this is an autosave, don't do anything
     if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
         return;
     }
@@ -812,31 +807,36 @@ function save_business_meta_box_data($post_id) {
         return;
     }
 
-    // Save fields
+    // Update the meta fields
     $fields = array(
-        'business_address' => '_business_address',
-        'business_phone' => '_business_phone',
-        'business_email' => '_business_email',
-        'business_website' => '_business_website',
-        'business_hours' => '_business_hours'
+        'business_address' => 'text',
+        'business_phone' => 'text',
+        'business_email' => 'email',
+        'business_website' => 'url',
+        'business_facebook' => 'url',
+        'business_linkedin' => 'url',
+        'business_youtube' => 'url',
+        'business_twitter' => 'url'
     );
 
-    foreach ($fields as $field => $meta_key) {
+    foreach ($fields as $field => $type) {
         if (isset($_POST[$field])) {
-            update_post_meta($post_id, $meta_key, sanitize_text_field($_POST[$field]));
+            $value = $_POST[$field];
+            
+            // Sanitize based on field type
+            switch ($type) {
+                case 'email':
+                    $value = sanitize_email($value);
+                    break;
+                case 'url':
+                    $value = esc_url_raw($value);
+                    break;
+                default:
+                    $value = sanitize_text_field($value);
+            }
+            
+            update_post_meta($post_id, '_' . $field, $value);
         }
-    }
-
-    // Save featured status
-    $featured = isset($_POST['business_featured']) ? 'yes' : 'no';
-    update_post_meta($post_id, 'featured', $featured);
-
-    // Save gallery images
-    if (isset($_POST['business_gallery'])) {
-        $gallery_images = array_map('absint', $_POST['business_gallery']);
-        update_post_meta($post_id, '_business_gallery', $gallery_images);
-    } else {
-        delete_post_meta($post_id, '_business_gallery');
     }
 }
 add_action('save_post_business', 'save_business_meta_box_data');
@@ -1506,3 +1506,164 @@ function nwb_add_business_owner_column_style() {
     }
 }
 add_action('admin_head', 'nwb_add_business_owner_column_style');
+
+// Enable custom image sizes and cropping
+add_theme_support('post-thumbnails');
+
+// Add custom image sizes for business images
+add_image_size('business-featured', 1920, 500, true);
+add_image_size('business-gallery', 1920, 500, true);
+
+// Enable image cropping for business post type
+function nwb_enable_image_crop() {
+    // Enable cropping for featured image
+    add_post_type_support('business', 'custom-fields');
+    add_theme_support('post-thumbnails', array('business'));
+    
+    // Add crop functionality to featured images
+    add_image_size('business-featured-crop', 1920, 500, true);
+    
+    // Enable cropping for gallery images
+    add_filter('wp_prepare_attachment_for_js', 'nwb_enable_gallery_crop', 10, 3);
+}
+add_action('after_setup_theme', 'nwb_enable_image_crop');
+
+// Add crop button to gallery images
+function nwb_enable_gallery_crop($response, $attachment, $meta) {
+    if (isset($response['sizes']) && isset($response['sizes']['business-gallery'])) {
+        $response['sizes']['business-gallery']['cropUrl'] = admin_url('admin-ajax.php') . '?action=crop-image&id=' . $attachment->ID . '&size=business-gallery';
+    }
+    return $response;
+}
+
+// Add custom fields for image focal points
+function nwb_add_image_focal_point_fields() {
+    add_meta_box(
+        'nwb_image_focal_points',
+        'Image Focal Points',
+        'nwb_render_focal_point_fields',
+        'business',
+        'side',
+        'default'
+    );
+}
+add_action('add_meta_boxes', 'nwb_add_image_focal_point_fields');
+
+// Render focal point fields
+function nwb_render_focal_point_fields($post) {
+    wp_nonce_field('nwb_save_focal_points', 'nwb_focal_points_nonce');
+    
+    $featured_focal = get_post_meta($post->ID, '_featured_image_focal_point', true);
+    $gallery_focal = get_post_meta($post->ID, '_gallery_images_focal_points', true);
+    
+    ?>
+    <div class="nwb-focal-points">
+        <p>
+            <label for="featured_focal_point">Featured Image Focal Point:</label><br>
+            <select name="featured_focal_point" id="featured_focal_point">
+                <option value="center" <?php selected($featured_focal, 'center'); ?>>Center</option>
+                <option value="top" <?php selected($featured_focal, 'top'); ?>>Top</option>
+                <option value="bottom" <?php selected($featured_focal, 'bottom'); ?>>Bottom</option>
+                <option value="left" <?php selected($featured_focal, 'left'); ?>>Left</option>
+                <option value="right" <?php selected($featured_focal, 'right'); ?>>Right</option>
+            </select>
+        </p>
+        
+        <div id="gallery-focal-points">
+            <?php
+            $gallery_images = get_post_meta($post->ID, '_business_gallery', true);
+            if (!empty($gallery_images)) {
+                foreach ($gallery_images as $index => $image_id) {
+                    $image = wp_get_attachment_image($image_id, 'thumbnail');
+                    $focal = isset($gallery_focal[$image_id]) ? $gallery_focal[$image_id] : 'center';
+                    ?>
+                    <div class="gallery-image-focal">
+                        <?php echo $image; ?>
+                        <select name="gallery_focal_points[<?php echo $image_id; ?>]">
+                            <option value="center" <?php selected($focal, 'center'); ?>>Center</option>
+                            <option value="top" <?php selected($focal, 'top'); ?>>Top</option>
+                            <option value="bottom" <?php selected($focal, 'bottom'); ?>>Bottom</option>
+                            <option value="left" <?php selected($focal, 'left'); ?>>Left</option>
+                            <option value="right" <?php selected($focal, 'right'); ?>>Right</option>
+                        </select>
+                    </div>
+                    <?php
+                }
+            }
+            ?>
+        </div>
+    </div>
+    
+    <style>
+    .nwb-focal-points select {
+        width: 100%;
+        margin: 5px 0;
+    }
+    .gallery-image-focal {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+    .gallery-image-focal img {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+    }
+    </style>
+    <?php
+}
+
+// Save focal point data
+function nwb_save_focal_points($post_id) {
+    if (!isset($_POST['nwb_focal_points_nonce']) || !wp_verify_nonce($_POST['nwb_focal_points_nonce'], 'nwb_save_focal_points')) {
+        return;
+    }
+    
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+    
+    if (!current_user_can('edit_post', $post_id)) {
+        return;
+    }
+    
+    // Save featured image focal point
+    if (isset($_POST['featured_focal_point'])) {
+        update_post_meta($post_id, '_featured_image_focal_point', sanitize_text_field($_POST['featured_focal_point']));
+    }
+    
+    // Save gallery images focal points
+    if (isset($_POST['gallery_focal_points'])) {
+        $gallery_focal = array_map('sanitize_text_field', $_POST['gallery_focal_points']);
+        update_post_meta($post_id, '_gallery_images_focal_points', $gallery_focal);
+    }
+}
+add_action('save_post_business', 'nwb_save_focal_points');
+
+// Add custom CSS for focal points
+function nwb_focal_point_css() {
+    if (is_singular('business')) {
+        $post_id = get_the_ID();
+        $featured_focal = get_post_meta($post_id, '_featured_image_focal_point', true);
+        $gallery_focal = get_post_meta($post_id, '_gallery_images_focal_points', true);
+        
+        $css = '';
+        if ($featured_focal) {
+            $position = str_replace(['top', 'bottom', 'left', 'right', 'center'], ['0%', '100%', '0%', '100%', '50%'], $featured_focal);
+            $css .= ".business-featured-image img { object-position: {$position} {$position}; }\n";
+        }
+        
+        if ($gallery_focal) {
+            foreach ($gallery_focal as $image_id => $focal) {
+                $position = str_replace(['top', 'bottom', 'left', 'right', 'center'], ['0%', '100%', '0%', '100%', '50%'], $focal);
+                $css .= ".business-gallery-image-{$image_id} img { object-position: {$position} {$position}; }\n";
+            }
+        }
+        
+        if ($css) {
+            echo "<style>{$css}</style>";
+        }
+    }
+}
+add_action('wp_head', 'nwb_focal_point_css');
