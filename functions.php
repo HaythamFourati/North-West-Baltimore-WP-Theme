@@ -289,6 +289,7 @@ function render_business_details_meta_box($post) {
     $linkedin = get_post_meta($post->ID, '_business_linkedin', true);
     $youtube = get_post_meta($post->ID, '_business_youtube', true);
     $twitter = get_post_meta($post->ID, '_business_twitter', true);
+    $instagram = get_post_meta($post->ID, '_business_instagram', true);
     
     // Add nonce for security
     wp_nonce_field('business_details_meta_box', 'business_details_meta_box_nonce');
@@ -326,6 +327,10 @@ function render_business_details_meta_box($post) {
         <p>
             <label for="business_twitter">X (Twitter) URL:</label><br>
             <input type="url" id="business_twitter" name="business_twitter" value="<?php echo esc_attr($twitter); ?>" class="widefat" placeholder="https://x.com/your-handle">
+        </p>
+        <p>
+            <label for="business_instagram">Instagram URL:</label><br>
+            <input type="url" id="business_instagram" name="business_instagram" value="<?php echo esc_attr($instagram); ?>" class="widefat" placeholder="https://instagram.com/your-handle">
         </p>
     </div>
     <?php
@@ -816,7 +821,8 @@ function save_business_meta_box_data($post_id) {
         'business_facebook' => 'url',
         'business_linkedin' => 'url',
         'business_youtube' => 'url',
-        'business_twitter' => 'url'
+        'business_twitter' => 'url',
+        'business_instagram' => 'url'
     );
 
     foreach ($fields as $field => $type) {
