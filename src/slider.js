@@ -70,16 +70,18 @@ export function initBusinessSlider(sliderElement) {
             track.style.transition = 'transform 0.5s ease-in-out';
         }
 
-        // Calculate the translation
+        // Calculate the translation - simple 100% per slide
         const translateX = -currentSlide * 100;
         track.style.transform = `translateX(${translateX}%)`;
         
-        // Update opacity for current and adjacent slides
+        // Update active class for current slide and opacity for adjacent slides
         slides.forEach((slide, index) => {
+            // Remove active class from all slides
+            slide.classList.remove('active');
+            
+            // Add active class to current slide
             if (index === currentSlide) {
                 slide.classList.add('active');
-            } else {
-                slide.classList.remove('active');
             }
         });
 
@@ -144,9 +146,34 @@ export function initBusinessSlider(sliderElement) {
     }
 
     // Initialize
-    track.style.transform = `translateX(-100%)`; // Start at first real slide
-    updateSlides();
+    updateSlides(true); // Initialize with the first slide active
     startAutoplay();
+
+    // Add touch swipe support
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    sliderElement.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+    
+    sliderElement.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    }, { passive: true });
+    
+    function handleSwipe() {
+        const swipeThreshold = 50;
+        if (touchEndX < touchStartX - swipeThreshold) {
+            // Swipe left - next slide
+            stopAutoplay();
+            nextSlide();
+        } else if (touchEndX > touchStartX + swipeThreshold) {
+            // Swipe right - previous slide
+            stopAutoplay();
+            prevSlide();
+        }
+    }
 
     // Handle visibility change
     document.addEventListener('visibilitychange', () => {

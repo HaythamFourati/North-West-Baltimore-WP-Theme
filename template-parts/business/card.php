@@ -7,7 +7,9 @@
 <article <?php post_class('business-card bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden'); ?>>
     <?php if (has_post_thumbnail()) : ?>
         <div class="aspect-w-16 aspect-h-9">
-            <?php the_post_thumbnail('medium', ['class' => 'w-full h-48 object-cover']); ?>
+            <a href="<?php the_permalink(); ?>">
+                <?php the_post_thumbnail('medium', ['class' => 'w-full h-48 object-cover']); ?>
+            </a>
         </div>
     <?php endif; ?>
 
