@@ -16,11 +16,11 @@
                     </div>
                 <?php else : ?>
                     <div class="text-2xl uppercase font-bold text-white">
-                        <?php bloginfo('name'); ?>
+                        <!-- <?php bloginfo('name'); ?> -->  Northwest Baltimore
                     </div>
                 <?php endif; ?>
                 <p class="text-gray-400 text-sm leading-relaxed">
-                    Empowering and connecting businesses in North West Baltimore. Join our thriving community and grow your business with us.
+                    Empowering and connecting businesses in North West Baltimore. Join our thriving community and grow your business with Northwest Baltimore.
                 </p>
                 <!-- Social Links -->
                 <div class="flex space-x-4">
@@ -79,7 +79,7 @@
                 $categories = get_terms(array(
                     'taxonomy' => 'business_category',
                     'hide_empty' => true,
-                    'number' => 6
+                    'number' => 4
                 ));
 
                 if (!empty($categories) && !is_wp_error($categories)) : ?>

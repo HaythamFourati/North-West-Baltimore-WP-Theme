@@ -1,0 +1,25 @@
+/* Custom styles for North West Baltimore WP Theme */
+
+/* Custom fonts */
+.montserrat {
+    font-family: 'Montserrat', sans-serif;
+}
+.open-sans {
+    font-family: 'Open Sans', sans-serif;
+}
+
+/* Custom scrollbar for the business listings */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #c5c5c5;
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #a3a3a3;
+}

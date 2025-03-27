@@ -1,6 +1,10 @@
 @import "tailwindcss";
 /* Using @tailwindcss/typography plugin */
 
+html {
+    scroll-behavior: smooth;
+}
+
 /* Business Slider Styles */
 .business-slider {
     position: relative;
