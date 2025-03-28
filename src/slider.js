@@ -70,8 +70,22 @@ export function initBusinessSlider(sliderElement) {
             track.style.transition = 'transform 0.5s ease-in-out';
         }
 
-        // Calculate the translation - simple 100% per slide
-        const translateX = -currentSlide * 100;
+        // Calculate the translation to ensure the current slide is always centered
+        const slideWidth = 60; // percentage
+        const slideMargin = 4; // pixels in total (2px on each side)
+        
+        // Calculate the center offset - this is the amount we need to shift to center the current slide
+        const centerOffset = (100 - slideWidth) / 2;
+        
+        // Calculate the slide unit (width + margin as percentage of viewport)
+        const viewportWidth = sliderElement.offsetWidth;
+        const marginPercentage = (slideMargin / viewportWidth) * 100;
+        const slideUnit = slideWidth + marginPercentage;
+        
+        // Position the current slide in the center
+        // We multiply the current slide index by the slide unit, then subtract the center offset
+        const translateX = -(currentSlide * slideUnit) + centerOffset;
+        
         track.style.transform = `translateX(${translateX}%)`;
         
         // Update active class for current slide and opacity for adjacent slides
@@ -187,6 +201,13 @@ export function initBusinessSlider(sliderElement) {
     // Handle transition end to prevent animation glitches
     track.addEventListener('transitionend', () => {
         isTransitioning = false;
+    });
+    
+    // Handle window resize to recalculate slide positions
+    window.addEventListener('resize', () => {
+        if (!isTransitioning) {
+            updateSlides(true);
+        }
     });
 }
 
