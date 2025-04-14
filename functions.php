@@ -1702,3 +1702,31 @@ function nwb_focal_point_css() {
     }
 }
 add_action('wp_head', 'nwb_focal_point_css');
+
+// Add custom CSS for business gallery images
+function nwb_business_gallery_css() {
+    if (is_singular('business')) {
+        ?>
+        <style>
+            /* Force images to fill the height while maintaining aspect ratio */
+            .business-slider img {
+                height: 100% !important;
+                width: auto !important;
+                max-width: none !important;
+                min-width: 100%;
+                object-fit: cover;
+                margin: 0 auto;
+            }
+            
+            /* Ensure the container maintains proper dimensions */
+            .business-slider .slide > div {
+                overflow: hidden;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        </style>
+        <?php
+    }
+}
+add_action('wp_head', 'nwb_business_gallery_css');
