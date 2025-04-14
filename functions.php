@@ -847,6 +847,35 @@ function save_business_meta_box_data($post_id) {
 }
 add_action('save_post_business', 'save_business_meta_box_data');
 
+// Save Business Gallery Meta Box Data
+function save_business_gallery_meta_box_data($post_id) {
+    // Check if our nonce is set and verify it
+    if (!isset($_POST['business_gallery_nonce']) || 
+        !wp_verify_nonce($_POST['business_gallery_nonce'], 'business_gallery_nonce')) {
+        return;
+    }
+
+    // If this is an autosave, don't do anything
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+
+    // Check user permissions
+    if (!current_user_can('edit_post', $post_id)) {
+        return;
+    }
+
+    // Update gallery images
+    if (isset($_POST['business_gallery'])) {
+        $gallery_images = array_map('intval', $_POST['business_gallery']);
+        update_post_meta($post_id, '_business_gallery', $gallery_images);
+    } else {
+        // If no images are selected, save an empty array
+        update_post_meta($post_id, '_business_gallery', array());
+    }
+}
+add_action('save_post_business', 'save_business_gallery_meta_box_data');
+
 /**
  * Get cached Google reviews for a business
  */
